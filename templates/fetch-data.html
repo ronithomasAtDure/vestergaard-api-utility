@@ -48,7 +48,7 @@
 					<h1 class="h3 mb-3"><strong>Fetch Data Utility</strong> Vestergaard</h1>
 					<form name="uploadForm" action="/fetch-data/" method="POST">
 						<div class="row">
-							<div class="col-xl-12 col-xxl-6 d-flex">
+							<div class="col-xl-12 col-xxl-12 d-flex">
 								<div class="w-100">
 									<div class="row">
 										<div class="col-sm-4">
@@ -95,9 +95,9 @@
 															</div>
 															<div class="mb-2 col-sm-4">
 																<label class="form-label">Survey Number</label>
-																<input class="form-control form-control" type="text"
-																	name="surveyNumber" value="{{surveyNumber}}"
-																	disabled />
+																<input class="form-control form-control" type="number"
+																	name="surveyNumber" required />
+																	<small>Last Survey: <b>{{surveyNumber}}</b></small>
 															</div>
 															<div class="mb-2">
 																<label class="form-label">Data Source</label>
@@ -157,7 +157,6 @@
 															<select class="form-select" name="fileType" required>
 																<option selected value="CSV">CSV</option>
 																<option value="JSON">JSON</option>
-																<option value="DB">DB</option>
 															</select>
 														</div>
 														<div class="text-center mt-3 d-grid">
@@ -180,8 +179,8 @@
 					<div class="row text-muted">
 						<div class="col-12 text-end">
 							<p class="mb-0">
-								<a class="text-muted" href="https://duretechnologies.com"
-									target="_blank"><strong>Dure Technologies Pvt Ltd</strong></a> &copy;
+								<a class="text-muted" href="https://duretechnologies.com" target="_blank"><strong>Dure
+										Technologies Pvt Ltd</strong></a> &copy;
 							</p>
 						</div>
 					</div>

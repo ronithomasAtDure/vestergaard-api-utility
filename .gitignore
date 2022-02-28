@@ -1,6 +1,6 @@
 .vscode
-__pycache__
-data/*
+/__pycache__
+/data/*
 /env
-master_data/*
+/master_data/*
 db.sqlite

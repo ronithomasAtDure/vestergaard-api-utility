@@ -11,38 +11,16 @@ import time
 from hurry.filesize import size
 import vestergaard_api_extraction as vae
 import pandas as pd
+import functions as fns
+
+main = Blueprint('main', __name__)
 
 #creating DB connection
 conn = vae.connection()
 cursor = conn.cursor()
 
-
-#Fetch surveyNumber and dataSource from DB
-def surveyNumber_dataSource():
-    surveyNumberQuery = "select max(survey_id) from vestergaard_survey_master"
-    cursor.execute(surveyNumberQuery)
-    surveyNumber = cursor.fetchone()[0] + 1
-    # print(surveyNumber, "surveyNumber")
-
-    dataSourceQuery = "select * from vestergaard_datasource_master"
-    cursor.execute(dataSourceQuery)
-    dataSource = [i[1] for i in cursor.fetchall()]
-
-    return surveyNumber, dataSource
-
-
-def bulkUploadCSV(file, table):
-    data = open(file, 'r')
-    query = f"COPY {table} FROM STDIN DELIMITER ',' CSV HEADER"
-    cursor.copy_expert(query, data)
-    #commit changes
-    conn.commit()
-    #close the file
-    data.close()
-
-
-main = Blueprint('main', __name__)
-
+#initiating required functions
+fns = fns.functions(conn, cursor)
 
 #index page/login page
 @main.route("/")
@@ -53,13 +31,25 @@ def login():
 #logout page
 @main.route("/logout/")
 def logout():
+    fns.logging("info", f"{current_user.username} logged out, {fns.dateTime()}")
     return render_template("logout.html")
 
+#logging page
+@main.route("/logs/")
+def logs():
+    logs = []
+    with open("./logs/logs.log", "r") as file:
+        logging = file.readlines()
+        for log in logging[::-1]:
+            logs.append(log)
+
+    return render_template("logs.html", logs=logs)
 
 #dashboard page
 @main.route("/dashboard/")
 @login_required
 def dashboard():
+    fns.logging("info", f"{current_user.username} accessed dashboard, on {fns.dateTime()[0]} at {fns.dateTime()[1]}")
     return render_template("dashboard.html")
 
 
@@ -79,11 +69,14 @@ def fetchData():
         fileType = request.form['fileType']
         # print(apiurl, startDate, endDate, surveyName)
 
-        surveyNumber, dataSourceList = surveyNumber_dataSource()
+        surveyNumber, dataSourceList = fns.surveyNumber_dataSource()
 
         #calling the extraction function
         vae.extraction(apiurl, startDate, endDate, fileType, surveyNumber,
                        dataSource)
+
+        fns.logging("info",
+            f"{current_user.username} has extracted data from {apiurl}")
 
         #make an entry into vestergaard_survey_master
         cursor.execute(
@@ -91,13 +84,14 @@ def fetchData():
                         VALUES (%s, %s, %s, %s, %s)""",
             (surveyNumber, surveyName, dataSource, startDate, endDate))
         conn.commit()
+        fns.logging("info", f"{current_user.username} has added survey {surveyNumber} to DB")
 
         return render_template("fetch-data.html",
                                surveyNumber=surveyNumber + 1,
                                dataSource=dataSourceList)
 
     else:
-        surveyNumber, dataSource = surveyNumber_dataSource()
+        surveyNumber, dataSource = fns.surveyNumber_dataSource()
         return render_template("fetch-data.html",
                                surveyNumber=surveyNumber,
                                dataSource=dataSource)
@@ -118,8 +112,8 @@ def dbupload():
 
         if uploadFile.endswith(".csv"):
             #load the csv file into the staging table
-            file = "./data/" + uploadFile
-            bulkUploadCSV(file, "vestergaard_api_stg_data")
+            file = "./data/" + str(uploadFile)
+            fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
 
         elif uploadFile.endswith(".json"):
             #read the json file and convert it to a temp csv
@@ -128,12 +122,13 @@ def dbupload():
 
             #load the csv file into the staging table
             file = "./data/" + uploadFile + ".csv"
-            bulkUploadCSV(file, "vestergaard_api_stg_data")
+            fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
 
             #remove temp csv file
             os.remove("./data/" + uploadFile + ".csv")
-
+        fns.logging("info", f"{current_user.username} has uploaded {uploadFile} to DB")
         fileData.remove(uploadFile)
+        transactionFileList.append(uploadFile)
         return render_template("db-upload.html", fileData=fileData)
     else:
         return render_template("db-upload.html", fileData=fileData)
@@ -158,6 +153,7 @@ def dataDirectory():
 @main.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download(filename):
+    fns.logging("info", f"{current_user.username} has downloaded {filename}")
     return send_from_directory("./data", filename)
 
 
@@ -166,12 +162,14 @@ def download(filename):
 @login_required
 def delete(filename):
     os.remove("./data/" + filename)
+    fns.logging("critical", f"{current_user.username} has deleted {filename}")
     return redirect(url_for('main.dataDirectory'))
 
 
 @main.route('/master-data', methods=['GET', 'POST'])
 @login_required
 def masterData():
+    print("Status Code", Response.status)
     #gather available schema from query
     query = "select * from vestergaard_master_data"
     #storing result in a dataframe
@@ -186,14 +184,13 @@ def masterData():
     if request.method == "POST":
         try:
             schemaDownload = request.form['schemaDownload']
-            print(schemaDownload)
 
             #download the schema
             query = f"select * from {schemaDownload} limit 0"
             cursor.execute(query)
             colnames = [colname[0] for colname in cursor.description]
             df = pd.DataFrame(columns=colnames)
-
+            fns.logging("info", f"{current_user.username} has downloaded {schemaDownload} schema")
             return Response(df.to_csv(index=False), mimetype='text/csv')
 
         except:
@@ -202,8 +199,9 @@ def masterData():
             CSVfile.save("./master_data/" + CSVfile.filename)
             # print(CSVfile.filename)
             file = "./master_data/" + CSVfile.filename
-            bulkUploadCSV(file, schemaUpload)
-            
+            fns.bulkUploadCSV(file, schemaUpload)
+            fns.logging("info", f"{current_user.username} has uploaded {schemaUpload} schema")
+
             return render_template("master-data.html",
                                    tableDesc=tableDesc,
                                    fetchTable=fetchTable,
@@ -213,6 +211,47 @@ def masterData():
                                tableDesc=tableDesc,
                                fetchTable=fetchTable,
                                uploadTable=uploadTable)
+
+
+transactionFileList = []
+transactionSessionLogs = []
+
+
+@main.route('/transaction-data', methods=['GET', 'POST'])
+@login_required
+def transactionData():
+    if request.method == "POST":
+        try:
+            fileName = request.form['fileName']
+            print(fileName)
+            query = f"select * from vestergaard_data_insert('{fileName}');"
+            cursor.execute(query)
+            status = cursor.fetchone()
+            print("Query status: ", status[0])
+            transactionFileList.remove(fileName)
+            date, time = fns.dateTime()
+            logs = [status[0], fileName, date, time]
+            fns.transactionLogs(logs)
+            transactionSessionLogs.append(logs)
+            print(transactionSessionLogs)
+            fns.logging("info", f"{current_user.username} has transacted data {fileName}")
+            return render_template(
+                "transaction-data.html",
+                transactionFileList=transactionFileList,
+                transactionSessionLogs=transactionSessionLogs[::-1])
+        except:
+            logs = ["FAILED", fileName, date, time]
+            fns.logging("warning", f"{current_user.username} failed transacted data {fileName}")
+            return render_template(
+                "transaction-data.html",
+                transactionFileList=transactionFileList,
+                transactionSessionLogs=transactionSessionLogs[::-1])
+    else:
+        print(transactionFileList)
+        return render_template(
+            "transaction-data.html",
+            transactionFileList=transactionFileList,
+            transactionSessionLogs=transactionSessionLogs[::-1])
 
 
 # we initialize our flask app using the __init__.py function

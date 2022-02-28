@@ -49,9 +49,10 @@ def extraction(url, startDate, endDate, fileType, surveyNumber, dataSource):
         df = json_normalize(df_data)
         df_final = df_final.append(df)
 
-    fileName = f"{surveyNumber}_{startDate}_{endDate}"
+    fileName = f"{surveyNumber}_{startDate.split(' ')[0]}_{endDate.split(' ')[0]}"
     df_final['survey_id'] = surveyNumber
     df_final['datasource'] = dataSource
+    df_final['filename'] = fileName
     if fileType == "CSV":
         df_final.to_csv(fr".\data\{fileName}.csv",  index=False, sep=',')
     elif fileType == "JSON":
