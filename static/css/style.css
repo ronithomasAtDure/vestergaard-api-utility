@@ -1,0 +1,16 @@
+.main-body {
+    overflow-y: hidden !important;
+}
+
+.footer-body {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+}
+.footer-main{
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 60px);
+}
