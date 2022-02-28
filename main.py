@@ -22,6 +22,10 @@ cursor = conn.cursor()
 #initiating required functions
 fns = fns.functions(conn, cursor)
 
+#creating required folders if not exists
+fns.startUpCheck()
+
+
 #index page/login page
 @main.route("/")
 def login():
@@ -31,8 +35,10 @@ def login():
 #logout page
 @main.route("/logout/")
 def logout():
-    fns.logging("info", f"{current_user.username} logged out, {fns.dateTime()}")
+    fns.logging("info",
+                f"{current_user.username} logged out, {fns.dateTime()}")
     return render_template("logout.html")
+
 
 #logging page
 @main.route("/logs/")
@@ -45,11 +51,15 @@ def logs():
 
     return render_template("logs.html", logs=logs)
 
+
 #dashboard page
 @main.route("/dashboard/")
 @login_required
 def dashboard():
-    fns.logging("info", f"{current_user.username} accessed dashboard, on {fns.dateTime()[0]} at {fns.dateTime()[1]}")
+    fns.logging(
+        "info",
+        f"{current_user.username} accessed dashboard, on {fns.dateTime()[0]} at {fns.dateTime()[1]}"
+    )
     return render_template("dashboard.html")
 
 
@@ -75,7 +85,8 @@ def fetchData():
         vae.extraction(apiurl, startDate, endDate, fileType, surveyNumber,
                        dataSource)
 
-        fns.logging("info",
+        fns.logging(
+            "info",
             f"{current_user.username} has extracted data from {apiurl}")
 
         #make an entry into vestergaard_survey_master
@@ -84,7 +95,9 @@ def fetchData():
                         VALUES (%s, %s, %s, %s, %s)""",
             (surveyNumber, surveyName, dataSource, startDate, endDate))
         conn.commit()
-        fns.logging("info", f"{current_user.username} has added survey {surveyNumber} to DB")
+        fns.logging(
+            "info",
+            f"{current_user.username} has added survey {surveyNumber} to DB")
 
         return render_template("fetch-data.html",
                                surveyNumber=surveyNumber + 1,
@@ -126,7 +139,8 @@ def dbupload():
 
             #remove temp csv file
             os.remove("./data/" + uploadFile + ".csv")
-        fns.logging("info", f"{current_user.username} has uploaded {uploadFile} to DB")
+        fns.logging(
+            "info", f"{current_user.username} has uploaded {uploadFile} to DB")
         fileData.remove(uploadFile)
         transactionFileList.append(uploadFile)
         return render_template("db-upload.html", fileData=fileData)
@@ -190,7 +204,10 @@ def masterData():
             cursor.execute(query)
             colnames = [colname[0] for colname in cursor.description]
             df = pd.DataFrame(columns=colnames)
-            fns.logging("info", f"{current_user.username} has downloaded {schemaDownload} schema")
+            fns.logging(
+                "info",
+                f"{current_user.username} has downloaded {schemaDownload} schema"
+            )
             return Response(df.to_csv(index=False), mimetype='text/csv')
 
         except:
@@ -200,7 +217,9 @@ def masterData():
             # print(CSVfile.filename)
             file = "./master_data/" + CSVfile.filename
             fns.bulkUploadCSV(file, schemaUpload)
-            fns.logging("info", f"{current_user.username} has uploaded {schemaUpload} schema")
+            fns.logging(
+                "info",
+                f"{current_user.username} has uploaded {schemaUpload} schema")
 
             return render_template("master-data.html",
                                    tableDesc=tableDesc,
@@ -234,14 +253,18 @@ def transactionData():
             fns.transactionLogs(logs)
             transactionSessionLogs.append(logs)
             print(transactionSessionLogs)
-            fns.logging("info", f"{current_user.username} has transacted data {fileName}")
+            fns.logging(
+                "info",
+                f"{current_user.username} has transacted data {fileName}")
             return render_template(
                 "transaction-data.html",
                 transactionFileList=transactionFileList,
                 transactionSessionLogs=transactionSessionLogs[::-1])
         except:
             logs = ["FAILED", fileName, date, time]
-            fns.logging("warning", f"{current_user.username} failed transacted data {fileName}")
+            fns.logging(
+                "warning",
+                f"{current_user.username} failed transacted data {fileName}")
             return render_template(
                 "transaction-data.html",
                 transactionFileList=transactionFileList,

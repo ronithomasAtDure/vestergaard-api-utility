@@ -4,6 +4,17 @@ class functions:
         self.conn = connection
         self.cursor = cursor
 
+    def startUpCheck(self):
+        import os
+
+        #check if the required folder exists
+        dirs = ["data", "logs", "master_data"]
+        for dir in dirs:
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+            else:
+                pass
+
     #Fetch surveyNumber and dataSource from DB
     def surveyNumber_dataSource(self):
         surveyNumberQuery = "select max(survey_id) from vestergaard_survey_master"
