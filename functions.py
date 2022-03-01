@@ -9,12 +9,12 @@ class functions:
 
         #check if the required folder exists
         dirs = ["data", "logs", "master_data"]
-        logFiles = ["logs.log", "transactionLogs.csv"]
         for dir in dirs:
             if not os.path.exists(dir):
                 os.makedirs(dir)
             else:
                 pass
+        logFiles = ["logs.log", "transactionLogs.csv"]
         for file in logFiles:
             dirPath = './logs/' + file
             if not os.path.exists(dirPath):
