@@ -1,6 +1,7 @@
 .vscode
 /__pycache__
-/data/*
+/data
 /env
-/master_data/*
+/logs
+/master_data
 db.sqlite

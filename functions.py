@@ -9,11 +9,16 @@ class functions:
 
         #check if the required folder exists
         dirs = ["data", "logs", "master_data"]
+        logFiles = ["logs.log", "transactionLogs.csv"]
         for dir in dirs:
             if not os.path.exists(dir):
                 os.makedirs(dir)
             else:
                 pass
+        for file in logFiles:
+            dirPath = './logs/' + file
+            if not os.path.exists(dirPath):
+                open(dirPath, 'w').close()
 
     #Fetch surveyNumber and dataSource from DB
     def surveyNumber_dataSource(self):
