@@ -277,6 +277,17 @@ def transactionData():
             transactionSessionLogs=transactionSessionLogs[::-1])
 
 
+@main.route('/save-data', methods=['GET', 'POST'])
+def saveData():
+    uploadCSVfile = request.files['uploadCSVfile']
+    uploadCSVfile.save("./data/" + uploadCSVfile.filename)
+    # print(CSVfile.filename)
+    fns.logging(
+        "info",
+        f"{current_user.username} has added {uploadCSVfile.filename} to folder"
+    )
+
+
 # we initialize our flask app using the __init__.py function
 app = create_app()
 
