@@ -12,8 +12,9 @@
 
 	<title>Data Utility</title>
 
-	<link href="/static/css/app.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<link href="/static/css/app.css" rel="stylesheet">
+	<link href="/static/css/style.css" rel="stylesheet">
 </head>
 
 <body>
@@ -163,9 +164,12 @@
 															<button type="submit" class="btn btn btn-primary">Fetch
 																Data</button>
 														</div>
+														<div class="text-center mt-3">
+															<h2 class="or-class"><span class="or-line">OR</span></h2>
+														</div>
 														<form action="/save-data" method="POST"
 														enctype="multipart/form-data">
-														<div class="mb-3 mt-3">
+														<div class="mb-3 mt-0">
 															<label class="form-label w-100">Manual File Upload</label>
 															<input type="file" name="uploadCSVfile">
 														</div>
