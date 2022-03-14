@@ -67,6 +67,14 @@ def dashboard():
 @main.route("/fetch-data/", methods=['POST', 'GET'])
 @login_required
 def fetchData():
+    existingMasterDataQuery = "select * from vestergaard_survey_master"
+    existingMasterData = pd.read_sql(existingMasterDataQuery, conn)
+    print(existingMasterData)
+    surveyIDs = existingMasterData.survey_id.to_list()
+    surveyNames = existingMasterData.survey_name.to_list()
+    surveyStartDates = existingMasterData.survey_start_date.to_list()
+    surveyEndDates = existingMasterData.survey_end_date.to_list()
+
     #capturing the form data
     if request.method == "POST":
         apiurl = request.form['apiurl']
@@ -80,6 +88,7 @@ def fetchData():
         # print(apiurl, startDate, endDate, surveyName)
 
         surveyNumber, dataSourceList = fns.surveyNumber_dataSource()
+        surveyNumber = request.form['surveyNumber']
 
         #calling the extraction function
         vae.extraction(apiurl, startDate, endDate, fileType, surveyNumber,
@@ -100,12 +109,20 @@ def fetchData():
             f"{current_user.username} has added survey {surveyNumber} to DB")
 
         return render_template("fetch-data.html",
+                               surveyIDs=surveyIDs,
+                               surveyNames=surveyNames,
+                               surveyStartDates=surveyStartDates,
+                               surveyEndDates=surveyEndDates,
                                surveyNumber=surveyNumber + 1,
                                dataSource=dataSourceList)
 
     else:
         surveyNumber, dataSource = fns.surveyNumber_dataSource()
         return render_template("fetch-data.html",
+                               surveyIDs=surveyIDs,
+                               surveyNames=surveyNames,
+                               surveyStartDates=surveyStartDates,
+                               surveyEndDates=surveyEndDates,
                                surveyNumber=surveyNumber,
                                dataSource=dataSource)
 
@@ -122,27 +139,72 @@ def dbupload():
     #capturing the form data
     if request.method == "POST":
         uploadFile = request.form['uploadFile']
+        uploadType = request.form['uploadType']
+        print(type(uploadType))
+        # print(fileName)
+        surveyNumber = uploadFile.split('_')[0]
+        checkSurveyQuery = f"select * from vestergaard_survey_master vsm where survey_id={int(surveyNumber)}"
+        cursor.execute(checkSurveyQuery)
+        if cursor.rowcount == 0 or uploadType == '1':
+            #1 = New Data
+            #2 = Replace data with existing survey ID
+            if uploadFile.endswith(".csv"):
+                #load the csv file into the staging table
+                file = "./data/" + str(uploadFile)
+                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
 
-        if uploadFile.endswith(".csv"):
-            #load the csv file into the staging table
-            file = "./data/" + str(uploadFile)
-            fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+            elif uploadFile.endswith(".json"):
+                #read the json file and convert it to a temp csv
+                data = pd.read_json("./data/" + uploadFile)
+                data = data.to_csv("./data/" + uploadFile + ".csv",
+                                   index=False)
 
-        elif uploadFile.endswith(".json"):
-            #read the json file and convert it to a temp csv
-            data = pd.read_json("./data/" + uploadFile)
-            data = data.to_csv("./data/" + uploadFile + ".csv", index=False)
+                #load the csv file into the staging table
+                file = "./data/" + uploadFile + ".csv"
+                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
 
-            #load the csv file into the staging table
-            file = "./data/" + uploadFile + ".csv"
-            fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+                #remove temp csv file
+                os.remove("./data/" + uploadFile + ".csv")
 
-            #remove temp csv file
-            os.remove("./data/" + uploadFile + ".csv")
-        fns.logging(
-            "info", f"{current_user.username} has uploaded {uploadFile} to DB")
-        fileData.remove(uploadFile)
-        transactionFileList.append(uploadFile)
+            fns.logging(
+                "info",
+                f"{current_user.username} has uploaded {uploadFile} to DB")
+            fileData.remove(uploadFile)
+            transactionFileList.append(uploadFile)
+
+        elif uploadType == '2':
+            deleteQuery = f"delete from vestergaard_api_stg_data where survey_id={int(surveyNumber)}"
+            transactionQuery1 = f"delete from vestaguard_etl_staging where survey_type={int(surveyNumber)}"
+            transactionQuery2 = f"delete from vestagaard_data_survey where survey_type={int(surveyNumber)}"
+            cursor.execute(deleteQuery)
+            cursor.execute(transactionQuery1)
+            cursor.execute(transactionQuery2)
+            conn.commit()
+
+            if uploadFile.endswith(".csv"):
+                #load the csv file into the staging table
+                file = "./data/" + str(uploadFile)
+                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+
+            elif uploadFile.endswith(".json"):
+                #read the json file and convert it to a temp csv
+                data = pd.read_json("./data/" + uploadFile)
+                data = data.to_csv("./data/" + uploadFile + ".csv",
+                                   index=False)
+
+                #load the csv file into the staging table
+                file = "./data/" + uploadFile + ".csv"
+                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+
+                #remove temp csv file
+                os.remove("./data/" + uploadFile + ".csv")
+
+            fns.logging(
+                "info",
+                f"{current_user.username} has uploaded {uploadFile} to DB")
+            fileData.remove(uploadFile)
+            transactionFileList.append(uploadFile)
+
         return render_template("db-upload.html", fileData=fileData)
     else:
         return render_template("db-upload.html", fileData=fileData)
@@ -242,7 +304,6 @@ def transactionData():
     if request.method == "POST":
         try:
             fileName = request.form['fileName']
-            print(fileName)
             query = f"select * from vestergaard_data_insert('{fileName}');"
             cursor.execute(query)
             status = cursor.fetchone()

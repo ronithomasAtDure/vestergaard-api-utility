@@ -7,9 +7,11 @@
 	<meta name="description" content="Vestergaard Utility">
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link rel="shortcut icon" href="/static/img/icons/icon-48x48.png" />
-
+	<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+		integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 	<link rel="canonical" href="https://demo-basic.adminkit.io/" />
-
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 	<title>Data Utility</title>
 
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -98,7 +100,56 @@
 																<label class="form-label">Survey Number</label>
 																<input class="form-control form-control" type="number"
 																	name="surveyNumber" required />
-																	<small>Last Survey: <b>{{surveyNumber}}</b></small>
+																<small>Last Survey: <b>{{surveyNumber}}</b>
+																	<button type="button" class="info-button"
+																		data-bs-toggle="modal"
+																		data-bs-target="#centeredModalPrimary">
+																		<i class="fa fa-info-circle"></i></small>
+																</button>
+																<div class="modal fade show" id="centeredModalPrimary"
+																	tabindex="-1" aria-modal="true" role="dialog"
+																	aria-hidden="true">
+																	<div class="modal-dialog modal-dialog-centered"
+																		role="document">
+																		<div class="modal-content">
+																			<div class="modal-header">
+																				<h5 class="modal-title">Master Data
+																				</h5>
+																				<button type="button" class="btn-close"
+																					data-bs-dismiss="modal"
+																					aria-label="Close"></button>
+																			</div>
+																			<div class="modal-body m-3">
+																				<table class="table table-hover my-0">
+																					<thead>
+																						<tr>
+																							<th>Survey ID</th>
+																							<th>Survey Name</th>
+																							<th>Survey Start Date</th>
+																							<th>Survey End Date</th>
+																						</tr>
+																					</thead>
+																					<tbody>
+																						{% for surveyID, surveyName, surveyStartDate, surveyEndDate in surveyIDs|zip(surveyNames, surveyStartDates, surveyEndDates) %}
+																						<tr>
+																							<td>{{surveyID}}</td>
+																							<td>{{surveyName}}</td>
+																							<td>{{surveyStartDate}}</td>
+																							<td>{{surveyEndDate}}</td>
+																						</tr>
+																						{% endfor %}
+																					</tbody>
+																				</table>
+																			</div>
+																			<div class="modal-footer">
+																				<button type="button"
+																					class="btn btn-secondary"
+																					data-bs-dismiss="modal">Close</button>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+
 															</div>
 															<div class="mb-2">
 																<label class="form-label">Data Source</label>
@@ -109,6 +160,51 @@
 																	<option>{{ source }}</option>
 																	{% endfor %}
 																</select>
+															</div>
+														</form>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="col-sm-4">
+											<div class="card">
+												<div class="card-body">
+													<div class="row">
+														<div class="col mt-0">
+															<h5 class="card-title">Submit Data</h5>
+														</div>
+														<div class="col-auto">
+															<div class="stat text-primary">
+																<i class="align-middle" data-feather="send"></i>
+															</div>
+														</div>
+														<div class="mb-2">
+															<label class="form-label">Save File to</label>
+															<select class="form-select" name="fileType" required>
+																<option selected value="CSV">CSV</option>
+																<option value="JSON">JSON</option>
+															</select>
+														</div>
+														<div class="text-center mt-3 d-grid">
+															<button type="submit" class="btn btn btn-primary">Fetch
+																Data</button>
+														</div>
+														<div class="text-center mt-3">
+															<h2 class="or-class"><span class="or-line">OR</span></h2>
+														</div>
+														<form action="/save-data" method="POST"
+															enctype="multipart/form-data">
+															<div class="mb-3 mt-0">
+																<label class="form-label w-100">Manual File
+																	Upload</label>
+																<input type="file" name="uploadCSVfile">
+															</div>
+															<div class="text-center mt-3 d-grid">
+																<button type="submit" class="btn btn btn-primary"
+																	data-bs-toggle="offcanvas"
+																	data-bs-target="#offcanvasRight"
+																	aria-controls="offcanvasLeft">Upload
+																	Data</button>
 															</div>
 														</form>
 													</div>
@@ -141,50 +237,6 @@
 												</div>
 											</div>
 										</div>
-										<div class="col-sm-4">
-											<div class="card">
-												<div class="card-body">
-													<div class="row">
-														<div class="col mt-0">
-															<h5 class="card-title">Submit Data</h5>
-														</div>
-														<div class="col-auto">
-															<div class="stat text-primary">
-																<i class="align-middle" data-feather="send"></i>
-															</div>
-														</div>
-														<div class="mb-2">
-															<label class="form-label">Save File to</label>
-															<select class="form-select" name="fileType" required>
-																<option selected value="CSV">CSV</option>
-																<option value="JSON">JSON</option>
-															</select>
-														</div>
-														<div class="text-center mt-3 d-grid">
-															<button type="submit" class="btn btn btn-primary">Fetch
-																Data</button>
-														</div>
-														<div class="text-center mt-3">
-															<h2 class="or-class"><span class="or-line">OR</span></h2>
-														</div>
-														<form action="/save-data" method="POST"
-														enctype="multipart/form-data">
-														<div class="mb-3 mt-0">
-															<label class="form-label w-100">Manual File Upload</label>
-															<input type="file" name="uploadCSVfile">
-														</div>
-														<div class="text-center mt-3 d-grid">
-															<button type="submit" class="btn btn btn-primary"
-																data-bs-toggle="offcanvas"
-																data-bs-target="#offcanvasRight"
-																aria-controls="offcanvasLeft">Upload
-																Data</button>
-														</div>
-													</form>
-													</div>
-												</div>
-											</div>
-										</div>
 									</div>
 								</div>
 							</div>
@@ -208,7 +260,9 @@
 	</div>
 
 	<script src="/static/js/app.js"></script>
-
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+		crossorigin="anonymous"></script>
 </body>
 
 </html>
