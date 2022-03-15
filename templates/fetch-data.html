@@ -48,7 +48,13 @@
 
 			<main class="content">
 				<div class="container-fluid p-0">
-					<h1 class="h3 mb-3"><strong>Fetch Data Utility</strong> Vestergaard</h1>
+					<!-- <h1 class="h3 mb-3"><strong>Fetch Data Utility</strong> Vestergaard</h1> -->
+					<nav aria-label="breadcrumb">
+						<ol class="breadcrumb">
+							<li class="breadcrumb-item active" aria-current="page">Home</li>
+						</ol>
+					</nav>
+
 					<form name="uploadForm" action="/fetch-data/" method="POST">
 						<div class="row">
 							<div class="col-xl-12 col-xxl-12 d-flex">
@@ -109,7 +115,7 @@
 																<div class="modal fade show" id="centeredModalPrimary"
 																	tabindex="-1" aria-modal="true" role="dialog"
 																	aria-hidden="true">
-																	<div class="modal-dialog modal-dialog-centered"
+																	<div class="modal-lg modal-dialog modal-dialog-centered"
 																		role="document">
 																		<div class="modal-content">
 																			<div class="modal-header">
@@ -130,7 +136,11 @@
 																						</tr>
 																					</thead>
 																					<tbody>
-																						{% for surveyID, surveyName, surveyStartDate, surveyEndDate in surveyIDs|zip(surveyNames, surveyStartDates, surveyEndDates) %}
+																						{% for surveyID, surveyName,
+																						surveyStartDate, surveyEndDate
+																						in surveyIDs|zip(surveyNames,
+																						surveyStartDates,
+																						surveyEndDates) %}
 																						<tr>
 																							<td>{{surveyID}}</td>
 																							<td>{{surveyName}}</td>
