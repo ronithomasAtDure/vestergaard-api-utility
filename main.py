@@ -25,11 +25,16 @@ fns = fns.functions(conn, cursor)
 #creating required folders if not exists
 fns.startUpCheck()
 
+def readTableConfig():
+    global tableConfig
+    tableConfig = pd.read_json('tableConfig.json', orient='records')
 
 #index page/login page
 @main.route("/")
 def login():
-    return render_template("login.html")
+    projectNamesQuery = "select * from projectNames"
+    projectNames = pd.read_sql(projectNamesQuery, conn)
+    return render_template("login.html", projectNames=projectNames.project_name.tolist())
 
 
 #logout page
@@ -51,25 +56,27 @@ def logs():
 
     return render_template("logs.html", logs=logs)
 
-
 #dashboard page
 @main.route("/dashboard/")
 @login_required
 def dashboard():
+    readTableConfig()
     fns.logging(
         "info",
         f"{current_user.username} accessed dashboard, on {fns.dateTime()[0]} at {fns.dateTime()[1]}"
     )
-    return render_template("dashboard.html")
+    return render_template("dashboard.html", projectName=tableConfig.project_name[0])
 
 
 #fetches the data from the DB
 @main.route("/fetch-data/", methods=['POST', 'GET'])
 @login_required
 def fetchData():
-    existingMasterDataQuery = "select * from vestergaard_survey_master"
+    # print(tableConfig.project_name_survey_master[0])
+    existingMasterDataQuery = f"select * from {tableConfig.project_name_survey_master[0]}"
+    print(existingMasterDataQuery)
     existingMasterData = pd.read_sql(existingMasterDataQuery, conn)
-    print(existingMasterData)
+    # print(existingMasterData)
     surveyIDs = existingMasterData.survey_id.to_list()
     surveyNames = existingMasterData.survey_name.to_list()
     surveyStartDates = existingMasterData.survey_start_date.to_list()
@@ -100,7 +107,7 @@ def fetchData():
 
         #make an entry into vestergaard_survey_master
         cursor.execute(
-            """INSERT INTO vestergaard_survey_master (survey_id, survey_name, survey_country, survey_start_date, survey_end_date)
+            f"""INSERT INTO {tableConfig.project_name_survey_master[0]} (survey_id, survey_name, survey_country, survey_start_date, survey_end_date)
                         VALUES (%s, %s, %s, %s, %s)""",
             (surveyNumber, surveyName, dataSource, startDate, endDate))
         conn.commit()
@@ -108,7 +115,7 @@ def fetchData():
             "info",
             f"{current_user.username} has added survey {surveyNumber} to DB")
 
-        return render_template("fetch-data.html",
+        return render_template("fetch-data.html", projectName=tableConfig.project_name[0],
                                surveyIDs=surveyIDs,
                                surveyNames=surveyNames,
                                surveyStartDates=surveyStartDates,
@@ -118,7 +125,7 @@ def fetchData():
 
     else:
         surveyNumber, dataSource = fns.surveyNumber_dataSource()
-        return render_template("fetch-data.html",
+        return render_template("fetch-data.html", projectName=tableConfig.project_name[0],
                                surveyIDs=surveyIDs,
                                surveyNames=surveyNames,
                                surveyStartDates=surveyStartDates,
@@ -143,7 +150,7 @@ def dbupload():
         print(type(uploadType))
         # print(fileName)
         surveyNumber = uploadFile.split('_')[0]
-        checkSurveyQuery = f"select * from vestergaard_survey_master vsm where survey_id={int(surveyNumber)}"
+        checkSurveyQuery = f"select * from {tableConfig.project_name_survey_master[0]} where survey_id={int(surveyNumber)}"
         cursor.execute(checkSurveyQuery)
         if cursor.rowcount == 0 or uploadType == '1':
             #1 = New Data
@@ -151,7 +158,7 @@ def dbupload():
             if uploadFile.endswith(".csv"):
                 #load the csv file into the staging table
                 file = "./data/" + str(uploadFile)
-                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+                fns.bulkUploadCSV(file, tableConfig.project_name_api_stg_data[0])
 
             elif uploadFile.endswith(".json"):
                 #read the json file and convert it to a temp csv
@@ -161,7 +168,7 @@ def dbupload():
 
                 #load the csv file into the staging table
                 file = "./data/" + uploadFile + ".csv"
-                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+                fns.bulkUploadCSV(file, tableConfig.project_name_api_stg_data[0])
 
                 #remove temp csv file
                 os.remove("./data/" + uploadFile + ".csv")
@@ -173,9 +180,9 @@ def dbupload():
             transactionFileList.append(uploadFile)
 
         elif uploadType == '2':
-            deleteQuery = f"delete from vestergaard_api_stg_data where survey_id={int(surveyNumber)}"
-            transactionQuery1 = f"delete from vestaguard_etl_staging where survey_type={int(surveyNumber)}"
-            transactionQuery2 = f"delete from vestagaard_data_survey where survey_type={int(surveyNumber)}"
+            deleteQuery = f"delete from {tableConfig.project_name_api_stg_data[0]} where survey_id={int(surveyNumber)}"
+            transactionQuery1 = f"delete from {tableConfig.project_name_etl_staging[0]} where survey_type={int(surveyNumber)}"
+            transactionQuery2 = f"delete from {tableConfig.project_name_data_survey[0]} where survey_type={int(surveyNumber)}"
             cursor.execute(deleteQuery)
             cursor.execute(transactionQuery1)
             cursor.execute(transactionQuery2)
@@ -184,7 +191,7 @@ def dbupload():
             if uploadFile.endswith(".csv"):
                 #load the csv file into the staging table
                 file = "./data/" + str(uploadFile)
-                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+                fns.bulkUploadCSV(file, tableConfig.project_name_api_stg_data[0])
 
             elif uploadFile.endswith(".json"):
                 #read the json file and convert it to a temp csv
@@ -194,7 +201,7 @@ def dbupload():
 
                 #load the csv file into the staging table
                 file = "./data/" + uploadFile + ".csv"
-                fns.bulkUploadCSV(file, "vestergaard_api_stg_data")
+                fns.bulkUploadCSV(file, tableConfig.project_name_api_stg_data[0])
 
                 #remove temp csv file
                 os.remove("./data/" + uploadFile + ".csv")
@@ -205,9 +212,9 @@ def dbupload():
             fileData.remove(uploadFile)
             transactionFileList.append(uploadFile)
 
-        return render_template("db-upload.html", fileData=fileData)
+        return render_template("db-upload.html", projectName=tableConfig.project_name[0], fileData=fileData, uploadTableName=tableConfig.project_name_api_stg_data[0])
     else:
-        return render_template("db-upload.html", fileData=fileData)
+        return render_template("db-upload.html", projectName=tableConfig.project_name[0], fileData=fileData, uploadTableName=tableConfig.project_name_api_stg_data[0])
 
 
 #view files in download(data) folder
@@ -283,12 +290,12 @@ def masterData():
                 "info",
                 f"{current_user.username} has uploaded {schemaUpload} schema")
 
-            return render_template("master-data.html",
+            return render_template("master-data.html", projectName=tableConfig.project_name[0],
                                    tableDesc=tableDesc,
                                    fetchTable=fetchTable,
                                    uploadTable=uploadTable)
     else:
-        return render_template("master-data.html",
+        return render_template("master-data.html", projectName=tableConfig.project_name[0],
                                tableDesc=tableDesc,
                                fetchTable=fetchTable,
                                uploadTable=uploadTable)
@@ -327,13 +334,13 @@ def transactionData():
                 "warning",
                 f"{current_user.username} failed transacted data {fileName}")
             return render_template(
-                "transaction-data.html",
+                "transaction-data.html", projectName=tableConfig.project_name[0],
                 transactionFileList=transactionFileList,
                 transactionSessionLogs=transactionSessionLogs[::-1])
     else:
         print(transactionFileList)
         return render_template(
-            "transaction-data.html",
+            "transaction-data.html", projectName=tableConfig.project_name[0],
             transactionFileList=transactionFileList,
             transactionSessionLogs=transactionSessionLogs[::-1])
 

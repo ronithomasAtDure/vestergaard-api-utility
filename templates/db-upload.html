@@ -23,7 +23,7 @@
 
 		<div class="main">
 			<nav class="navbar navbar-expand navbar-light navbar-bg">
-				<h3><b>VESTERGAARD UTILITY</b></h3>
+				<h3><b>{{projectName.upper()}} UTILITY</b></h3>
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
 						<li class="nav-item dropdown">
@@ -50,7 +50,7 @@
 
 					<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
 						<ol class="breadcrumb">
-							<li class="breadcrumb-item"><a href="./fetch-data.html"><strong>Fetch Data Utility</strong></a></li>
+							<li class="breadcrumb-item"><a href="/fetch-data"><strong>Fetch Data Utility</strong></a></li>
 							<li class="breadcrumb-item active" aria-current="page"><strong>Upload to DB</strong></li>
 						</ol>
 					</nav>
@@ -81,7 +81,7 @@
 																{% endfor %}
 															</select>
 														</div>
-														<small>*Uploads to table "vestergaard_api_stg_data"</small>
+														<small>*Uploads to table "{{uploadTableName}}"</small>
 														<div class="text-center mt-3 d-grid">
 															<button type="button" class="btn btn-primary"
 																data-bs-toggle="modal" data-bs-target="#exampleModal">

@@ -5,3 +5,4 @@
 /logs
 /master_data
 db.sqlite
+tableConfig.json

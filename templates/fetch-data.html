@@ -24,7 +24,7 @@
 
 		<div class="main">
 			<nav class="navbar navbar-expand navbar-light navbar-bg">
-				<h3><b>VESTERGAARD UTILITY</b></h3>
+				<h3><b>{{projectName.upper()}} UTILITY</b></h3>
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
 						<li class="nav-item dropdown">
@@ -51,7 +51,7 @@
 					<!-- <h1 class="h3 mb-3"><strong>Fetch Data Utility</strong> Vestergaard</h1> -->
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb">
-							<li class="breadcrumb-item active" aria-current="page"><strong>Fetch Data Utility</strong></li>
+							<li class="breadcrumb-item active" aria-current="page"><strong>Fetch Data</strong></li>
 						</ol>
 					</nav>
 
@@ -199,7 +199,7 @@
 															<button type="submit" class="btn btn btn-primary">Fetch
 																Data</button>
 														</div>
-														<div class="text-center mt-3">
+														<!-- <div class="text-center mt-3">
 															<h2 class="or-class"><span class="or-line">OR</span></h2>
 														</div>
 														<form action="/save-data" method="POST"
@@ -216,7 +216,7 @@
 																	aria-controls="offcanvasLeft">Upload
 																	Data</button>
 															</div>
-														</form>
+														</form> -->
 													</div>
 												</div>
 											</div>
@@ -252,6 +252,25 @@
 							</div>
 						</div>
 					</form>
+					<!-- toast -->
+					<div class="toast-container position-absolute p-3 top-0 start-50 translate-middle-x"
+						id="toastPlacement" data-original-class="toast-container position-absolute p-3">
+						<div class="toast fade show">
+							<div class="toast-header">
+								<svg class="bd-placeholder-img rounded me-2" width="20" height="20"
+									xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+									preserveAspectRatio="xMidYMid slice" focusable="false">
+									<rect width="100%" height="100%" fill="#007aff"></rect>
+								</svg>
+
+								<strong class="me-auto">AdminKit</strong>
+								<small>11 mins ago</small>
+							</div>
+							<div class="toast-body">
+								Hello, world! This is a toast message.
+							</div>
+						</div>
+					</div>
 			</main>
 
 			<footer class="footer">

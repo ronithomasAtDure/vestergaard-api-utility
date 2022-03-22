@@ -34,27 +34,36 @@
 							<div class="card-body">
 								<div class="m-sm-4">
 									<form name="signup" action="/signup" method="POST">
-										<div class="mb-3">
+										<div class="mb-1">
 											<label class="form-label">Name</label>
 											<input class="form-control form-control-lg" type="text" name="name"
 												placeholder="Enter your name" />
 										</div>
-										<div class="mb-3">
+										<div class="mb-1">
 											<label class="form-label">Company</label>
 											<input class="form-control form-control-lg" type="text" name="company"
 												placeholder="Enter your company name" />
 										</div>
-										<div class="mb-3">
+										<div class="mb-1">
+											<label class="form-label">Project Assigned</label>
+											<select class="form-select" name="projectAssigned" required>
+												<option selected value="">Select a Project</option>
+												{% for project in projectNames %}
+												<option value="{{project}}">{{project}}</option>
+												{% endfor %}
+											</select>
+										</div>
+										<div class="mb-1">
 											<label class="form-label">Email</label>
 											<input class="form-control form-control-lg" type="email" name="email"
 												placeholder="Enter your email" />
 										</div>
-										<div class="mb-3">
+										<div class="mb-1">
 											<label class="form-label">Username</label>
 											<input class="form-control form-control-lg" type="text" name="username"
 												placeholder="Enter your username" />
 										</div>
-										<div class="mb-3">
+										<div class="mb-1">
 											<label class="form-label">Password</label>
 											<input class="form-control form-control-lg" type="password" name="password"
 												placeholder="Enter password" />

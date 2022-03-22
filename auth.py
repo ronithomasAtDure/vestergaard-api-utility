@@ -9,17 +9,24 @@ from models import User
 from flask_login import login_user, logout_user, login_required, current_user
 from __init__ import db
 
+auth = Blueprint('auth',
+                 __name__)  # create a Blueprint object that we name 'auth'
 
-auth = Blueprint('auth', __name__) # create a Blueprint object that we name 'auth'
+@auth.route('/login', methods=['GET', 'POST'])  # define login page path
+def login():  # define login page fucntion
+    import vestergaard_api_extraction as vae
+    import pandas as pd
+    conn = vae.connection()
+    projectNamesQuery = "select * from projectNames"
+    projectNames = pd.read_sql(projectNamesQuery, conn)
 
-@auth.route('/login', methods=['GET', 'POST']) # define login page path
-def login(): # define login page fucntion
-    if request.method=='GET': # if the request is a GET we return the login page
-        return render_template('login.html')
+    if request.method == 'GET':  # if the request is a GET we return the login page
+        return render_template('login.html', projectNames=projectNames.project_name.tolist())
 
-    else: # if the request is POST the we check if the user exist and with te right password
+    else:  # if the request is POST the we check if the user exist and with te right password
         username = request.form.get('username')
         password = request.form.get('password')
+        projectAssigned = request.form.get('projectAssigned')
         remember = True if request.form.get('remember') else False
 
         user = User.query.filter_by(username=username).first()
@@ -29,42 +36,69 @@ def login(): # define login page fucntion
             # flash('Please sign up before!')
             return redirect(url_for('auth.signup'))
 
-        elif not check_password_hash(user.password, password):
+        #check if the user is assigned to the project
+        if user.project != projectAssigned:
+            # flash('Please sign up before!')
+            return redirect(url_for('auth.signup'))
+
+        elif not check_password_hash(
+                user.password,
+                password):  # check if the password is correct
             # flash('Please check your login details and try again.')
-            return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
-        
+            return redirect(
+                url_for('auth.login')
+            )  # if the user doesn't exist or password is wrong, reload the page
+
         # if the above check passes, then we know the user has the right credentials
         login_user(user, remember=remember)
+        projectTablesQuery = f"select * from projectNames where project_name = '{user.project}'"
+        projectTables = pd.read_sql(projectTablesQuery, conn)
+        projectTables.to_json('tableConfig.json', orient='records')
         return redirect(url_for('main.dashboard'))
 
-@auth.route('/signup', methods=['GET', 'POST'])# we define the sign up path
-def signup(): # define the sign up function
-    if request.method=='GET': # If the request is GET we return the sign up page and forms
-        return render_template('signup.html')
-    
-    else: # if the request is POST, then we check if the email doesn't already exist and then we save data
+
+@auth.route('/signup', methods=['GET', 'POST'])  # we define the sign up path
+def signup():  # define the sign up function
+    import vestergaard_api_extraction as vae
+    import pandas as pd
+    conn = vae.connection()
+    projectNamesQuery = "select * from projectNames"
+    projectNames = pd.read_sql(projectNamesQuery, conn)
+    if request.method == 'GET':  # If the request is GET we return the sign up page and forms
+        return render_template('signup.html', projectNames=projectNames.project_name.tolist())
+
+    else:  # if the request is POST, then we check if the email doesn't already exist and then we save data
         name = request.form.get('name')
         company = request.form.get('company')
+        projectAssigned = request.form.get('projectAssigned')
         email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
 
-        user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
-        
-        if user: # if a user is found, we want to redirect back to signup page so user can try again
+        user = User.query.filter_by(email=email).first(
+        )  # if this returns a user, then the email already exists in database
+
+        if user:  # if a user is found, we want to redirect back to signup page so user can try again
             # flash('Email address already exists')
             return redirect(url_for('auth.signup'))
-        
+
         # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-        new_user = User(name=name, company=company, email=email, username=username, password=generate_password_hash(password, method='sha256')) #
-        
+        new_user = User(name=name,
+                        company=company,
+                        project=projectAssigned,
+                        email=email,
+                        username=username,
+                        password=generate_password_hash(password,
+                                                        method='sha256'))  #
+
         # add the new user to the database
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('auth.login'))
 
-@auth.route('/logout') # define logout path
+
+@auth.route('/logout')  # define logout path
 @login_required
-def logout(): #define the logout function
+def logout():  #define the logout function
     logout_user()
     return redirect(url_for('main.logout'))
