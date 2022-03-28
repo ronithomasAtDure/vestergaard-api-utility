@@ -13,7 +13,7 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
 		integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 	<title>Data Utility</title>
-
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link href="/static/css/app.css" rel="stylesheet">
 	<link href="/static/css/style.css" rel="stylesheet">
@@ -97,12 +97,12 @@
 																<input class="form-control form-control" type="date"
 																	name="endDate" required />
 															</div>
-															<div class="mb-2 col-sm-8">
+															<div class="mb-0 col-sm-8">
 																<label class="form-label">Survey Name</label>
 																<input class="form-control form-control" type="text"
 																	name="surveyName" placeholder="Mumbai" required />
 															</div>
-															<div class="mb-2 col-sm-4">
+															<div class="mb-0 col-sm-4">
 																<label class="form-label">Survey Number</label>
 																<input class="form-control form-control" type="number"
 																	name="surveyNumber" required />
@@ -171,12 +171,24 @@
 																	{% endfor %}
 																</select>
 															</div>
+															<div class="mb-2">
+																<label class="form-label">Save File to</label>
+																<select class="form-select" name="fileType" required>
+																	<option selected value="CSV">CSV</option>
+																	<option value="JSON">JSON</option>
+																</select>
+															</div>
+															<div class="text-center mt-0 d-grid">
+																<button type="submit" id="fetch-button"
+																	class="btn btn btn-primary">Fetch
+																	Data</button>
+															</div>
 														</form>
 													</div>
 												</div>
 											</div>
 										</div>
-										<div class="col-sm-4">
+										<!-- <div class="col-sm-4">
 											<div class="card">
 												<div class="card-body">
 													<div class="row">
@@ -196,10 +208,11 @@
 															</select>
 														</div>
 														<div class="text-center mt-3 d-grid">
-															<button type="submit" class="btn btn btn-primary">Fetch
+															<button type="submit" id="fetch-button"
+																class="btn btn btn-primary">Fetch
 																Data</button>
 														</div>
-														<!-- <div class="text-center mt-3">
+														<div class="text-center mt-3">
 															<h2 class="or-class"><span class="or-line">OR</span></h2>
 														</div>
 														<form action="/save-data" method="POST"
@@ -216,11 +229,11 @@
 																	aria-controls="offcanvasLeft">Upload
 																	Data</button>
 															</div>
-														</form> -->
+														</form>
 													</div>
 												</div>
 											</div>
-										</div>
+										</div> -->
 										<div class="col-sm-4">
 											<div class="card">
 												<div class="card-body">
@@ -255,7 +268,7 @@
 					<!-- toast -->
 					<div class="toast-container position-absolute p-3 top-0 start-50 translate-middle-x"
 						id="toastPlacement" data-original-class="toast-container position-absolute p-3">
-						<div class="toast fade show">
+						<div class="toast fade">
 							<div class="toast-header">
 								<svg class="bd-placeholder-img rounded me-2" width="20" height="20"
 									xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
@@ -263,14 +276,14 @@
 									<rect width="100%" height="100%" fill="#007aff"></rect>
 								</svg>
 
-								<strong class="me-auto">AdminKit</strong>
-								<small>11 mins ago</small>
+								<strong class="me-auto">Utility Response</strong>
 							</div>
-							<div class="toast-body">
+							<div class="toast-body" id="toast-body">
 								Hello, world! This is a toast message.
 							</div>
 						</div>
 					</div>
+
 			</main>
 
 			<footer class="footer">
@@ -289,6 +302,7 @@
 	</div>
 
 	<script src="/static/js/app.js"></script>
+	<script src="/static/js/main.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
 		integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
 		crossorigin="anonymous"></script>

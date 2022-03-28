@@ -11,7 +11,7 @@
 	<link rel="canonical" href="https://demo-basic.adminkit.io/pages-sign-up.html" />
 
 	<title>Sign Up</title>
-
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<link href="/static/css/app.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -65,11 +65,17 @@
 										</div>
 										<div class="mb-1">
 											<label class="form-label">Password</label>
-											<input class="form-control form-control-lg" type="password" name="password"
+											<input class="form-control form-control-lg" type="password" name="password" id="password"
 												placeholder="Enter password" />
 										</div>
-										<div class="text-center mt-3">
-											<button class="btn btn-lg btn-primary">Sign Up</button>
+										<div class="mb-1">
+											<label class="form-label">Confirm Password</label>
+											<input class="form-control form-control-lg" type="text" name="confirmPassword" id="confirmPassword"
+												placeholder="Enter password" />
+												<span id='message'></span>
+										</div>
+										<div class="text-center mt-2">
+											<button id="userCreation" class="btn btn-lg btn-primary">Sign Up</button>
 											<br>
 											<small><a href="/login">Already Registered? Login</a></small>
 										</div>
@@ -85,6 +91,7 @@
 	</main>
 
 	<script src="/static/js/app.js"></script>
+	<script src="/static/js/main.js"></script>
 
 </body>
 

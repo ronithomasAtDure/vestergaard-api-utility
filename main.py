@@ -54,7 +54,7 @@ def logs():
         for log in logging[::-1]:
             logs.append(log)
 
-    return render_template("logs.html", logs=logs)
+    return render_template("logs.html", logs=logs, projectName=tableConfig.project_name[0],)
 
 #dashboard page
 @main.route("/dashboard/")
@@ -105,23 +105,27 @@ def fetchData():
             "info",
             f"{current_user.username} has extracted data from {apiurl}")
 
-        #make an entry into vestergaard_survey_master
-        cursor.execute(
-            f"""INSERT INTO {tableConfig.project_name_survey_master[0]} (survey_id, survey_name, survey_country, survey_start_date, survey_end_date)
-                        VALUES (%s, %s, %s, %s, %s)""",
-            (surveyNumber, surveyName, dataSource, startDate, endDate))
-        conn.commit()
-        fns.logging(
-            "info",
-            f"{current_user.username} has added survey {surveyNumber} to DB")
+        if surveyNumber in surveyIDs:
+            #make an entry into vestergaard_survey_master
+            cursor.execute(
+                f"""INSERT INTO {tableConfig.project_name_survey_master[0]} (survey_id, survey_name, survey_country, survey_start_date, survey_end_date)
+                            VALUES (%s, %s, %s, %s, %s)""",
+                (surveyNumber, surveyName, dataSource, startDate, endDate))
+            conn.commit()
+            fns.logging(
+                "info",
+                f"{current_user.username} has added survey {surveyNumber} to DB")
+        else:
+            #update the existing entry
+            cursor.execute(
+                f"""update {tableConfig.project_name_survey_master[0]} set survey_name='{surveyName}', survey_country='{dataSource}', survey_start_date='{startDate}', survey_end_date='{endDate}'
+                            where survey_id = '{surveyNumber}'""")
+            conn.commit()
+            fns.logging(
+                "info",
+                f"{current_user.username} has added survey {surveyNumber} to DB")
 
-        return render_template("fetch-data.html", projectName=tableConfig.project_name[0],
-                               surveyIDs=surveyIDs,
-                               surveyNames=surveyNames,
-                               surveyStartDates=surveyStartDates,
-                               surveyEndDates=surveyEndDates,
-                               surveyNumber=surveyNumber + 1,
-                               dataSource=dataSourceList)
+        return redirect(url_for('main.dbupload'))
 
     else:
         surveyNumber, dataSource = fns.surveyNumber_dataSource()
@@ -180,9 +184,9 @@ def dbupload():
             transactionFileList.append(uploadFile)
 
         elif uploadType == '2':
-            deleteQuery = f"delete from {tableConfig.project_name_api_stg_data[0]} where survey_id={int(surveyNumber)}"
-            transactionQuery1 = f"delete from {tableConfig.project_name_etl_staging[0]} where survey_type={int(surveyNumber)}"
-            transactionQuery2 = f"delete from {tableConfig.project_name_data_survey[0]} where survey_type={int(surveyNumber)}"
+            deleteQuery = f"delete from {tableConfig.project_name_api_stg_data[0]} where survey_id='{int(surveyNumber)}'"
+            transactionQuery1 = f"delete from {tableConfig.project_name_etl_staging[0]} where survey_type='{int(surveyNumber)}'"
+            transactionQuery2 = f"delete from {tableConfig.project_name_data_survey[0]} where survey_type='{int(surveyNumber)}'"
             cursor.execute(deleteQuery)
             cursor.execute(transactionQuery1)
             cursor.execute(transactionQuery2)
@@ -212,7 +216,7 @@ def dbupload():
             fileData.remove(uploadFile)
             transactionFileList.append(uploadFile)
 
-        return render_template("db-upload.html", projectName=tableConfig.project_name[0], fileData=fileData, uploadTableName=tableConfig.project_name_api_stg_data[0])
+        return redirect(url_for('main.transactionData'))
     else:
         return render_template("db-upload.html", projectName=tableConfig.project_name[0], fileData=fileData, uploadTableName=tableConfig.project_name_api_stg_data[0])
 
