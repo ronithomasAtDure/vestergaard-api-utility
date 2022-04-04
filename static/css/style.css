@@ -37,3 +37,15 @@
     background-color: transparent;
     cursor: pointer;
 }
+
+.alert-message {
+    padding: .95rem .95rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.alert-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}

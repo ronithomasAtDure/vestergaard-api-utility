@@ -12,8 +12,9 @@
 	<link rel="canonical" href="https://demo-basic.adminkit.io/" />
 
 	<title>Data Utility</title>
-
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="/static/css/app.css" rel="stylesheet">
+	<link href="/static/css/style.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
@@ -176,6 +177,14 @@
 							</div>
 						</div>
 					</div>
+				</div>
+				{% if error %}
+				<div class="alert alert-danger" role="alert">
+					<div class="alert-message">
+						{{error}}
+					</div>
+				</div>
+				{% endif %}
 			</main>
 
 			<footer class="footer">
