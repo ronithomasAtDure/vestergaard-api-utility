@@ -87,6 +87,7 @@ def fetchData():
         existingMasterData = pd.read_sql(existingMasterDataQuery, conn)
         # print(existingMasterData)
         surveyIDs = existingMasterData.survey_id.to_list()
+        print("surveyIDs", surveyIDs)
         surveyNames = existingMasterData.survey_name.to_list()
         surveyStartDates = existingMasterData.survey_start_date.to_list()
         surveyEndDates = existingMasterData.survey_end_date.to_list()
@@ -117,7 +118,8 @@ def fetchData():
                 "info",
                 f"{current_user.username} has extracted data from {apiurl}")
 
-            if surveyNumber in surveyIDs:
+            if surveyNumber not in surveyIDs:
+                print("Master data does not exists")
                 #make an entry into vestergaard_survey_master
                 cursor.execute(
                     f"""INSERT INTO {tableConfig.project_name_survey_master[0]} (survey_id, survey_name, survey_country, survey_start_date, survey_end_date)
@@ -160,6 +162,12 @@ def fetchData():
 @main.route("/db-upload/", methods=['POST', 'GET'])
 @login_required
 def dbupload():
+    existingMasterDataQuery = f"select * from {tableConfig.project_name_survey_master[0]}"
+    print(existingMasterDataQuery)
+    existingMasterData = pd.read_sql(existingMasterDataQuery, conn)
+    # print(existingMasterData)
+    surveyIDs = existingMasterData.survey_id.to_list()
+
     #gather file name from the uploads folder
     fileData = []
     for files in os.listdir("./data"):
@@ -348,7 +356,7 @@ def masterData():
                                uploadTable=uploadTable)
 
 
-transactionFileList = []
+transactionFileList = ["2_2022-04-05_2022-04-05.csv"] * 5
 transactionSessionLogs = []
 
 
@@ -372,11 +380,19 @@ def transactionData():
                 fns.logging(
                     "info",
                     f"{current_user.username} has transacted data {fileName}")
+                transData = pd.read_csv("./data/" + fileName, low_memory=False)
+                transDataHeaders = transData.columns.values.tolist()
+                transDataBody = transData[:5].values.tolist()
+                print(transDataHeaders)
+                print(transDataBody)
                 return render_template(
-                    "transaction-data.html",
+                    "transaction-data.html", transDataHeaders=transDataHeaders,
+                    transDataBody=transDataBody,
+                    projectName=tableConfig.project_name[0],
                     transactionFileList=transactionFileList,
                     transactionSessionLogs=transactionSessionLogs[::-1])
-            except:
+            except Exception as e:
+                print("returned")
                 logs = ["FAILED", fileName, date, time]
                 fns.logging(
                     "warning",

@@ -24,7 +24,7 @@
 
 		<div class="main">
 			<nav class="navbar navbar-expand navbar-light navbar-bg">
-				<h3><b>{{projectName.upper()}} UTILITY</b></h3>
+				<h3><b>API UTILITY - {{projectName.upper()}}</b></h3>
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
 						<li class="nav-item dropdown">
@@ -48,12 +48,14 @@
 			<main class="content">
 				<div class="container-fluid p-0">
 					<!-- <h1 class="h3 mb-3">Transaction Data</h1> -->
-					
+
 					<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
 						<ol class="breadcrumb">
-							<li class="breadcrumb-item"><a href="/fetch-data"><strong>Fetch Data Utility</strong></a></li>
+							<li class="breadcrumb-item"><a href="/fetch-data"><strong>Fetch Data Utility</strong></a>
+							</li>
 							<li class="breadcrumb-item"><a href="/db-upload"><strong>Upload to DB</strong></a></li>
-							<li class="breadcrumb-item active" aria-current="page"><strong>Transaction Data</strong></li>
+							<li class="breadcrumb-item active" aria-current="page"><strong>Transaction Data</strong>
+							</li>
 						</ol>
 					</nav>
 					<div class="row">
@@ -96,6 +98,7 @@
 											</form>
 										</div>
 									</div>
+
 									<div class="col-sm-8">
 										<div class="card flex-fill">
 											<table class="table table-hover my-0">
@@ -126,6 +129,28 @@
 											</table>
 										</div>
 									</div>
+									<div class="col-sm-12">
+										<div class="card flex-fill">
+											<table class="table-sm table-hover my-0">
+												<thead>
+													<tr>
+														{% for headers in transDataHeaders %}
+														<th>{{headers}}</th>
+														{% endfor %}
+													</tr>
+												</thead>
+												<tbody>
+													{% for bodyData in transDataBody %}
+													<tr>
+														{% for body in bodyData %}
+														<td>{{body}}</td>
+														{% endfor %}
+													</tr>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -137,8 +162,9 @@
 					<div class="row text-muted">
 						<div class="col-12 text-end">
 							<p class="mb-0">
-								<a class="text-muted" href="https://duretechnologies.com" target="_blank"><strong>Dure
-										Technologies Pvt Ltd</strong></a> &copy;
+								<a class="text-muted" href="https://duretechnologies.com" target="_blank">
+									&copy;<strong>Dure
+										Technologies Pvt Ltd</strong></a>
 							</p>
 						</div>
 					</div>

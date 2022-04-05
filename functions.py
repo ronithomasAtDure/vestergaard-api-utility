@@ -24,7 +24,8 @@ class functions:
     def surveyNumber_dataSource(self):
         surveyNumberQuery = "select max(survey_id) from vestergaard_survey_master"
         self.cursor.execute(surveyNumberQuery)
-        surveyNumber = self.cursor.fetchone()[0] + 1
+        surveyNumber = self.cursor.fetchone()[0]
+        print("fns",surveyNumber)
         # print(surveyNumber, "surveyNumber")
 
         dataSourceQuery = "select * from vestergaard_datasource_master"
