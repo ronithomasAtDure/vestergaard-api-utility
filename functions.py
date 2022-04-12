@@ -6,9 +6,14 @@ class functions:
 
     def startUpCheck(self):
         import os
+        import pandas as pd
+
+        #Check if the projecct directory exists
+        tableConfig = pd.read_json('tableConfig.json', orient='records')
+
 
         #check if the required folder exists
-        dirs = ["data", "logs", "master_data"]
+        dirs = [tableConfig.project_name[0], "logs", "master_data"]
         for dir in dirs:
             if not os.path.exists(dir):
                 os.makedirs(dir)

@@ -49,3 +49,8 @@
     background-color: #f8d7da;
     border-color: #f5c2c7;
 }
+
+.transactionlogs{
+    height: 198px;
+    overflow-y: auto;
+}

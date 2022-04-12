@@ -22,10 +22,6 @@ cursor = conn.cursor()
 #initiating required functions
 fns = fns.functions(conn, cursor)
 
-#creating required folders if not exists
-fns.startUpCheck()
-
-
 def readTableConfig():
     global tableConfig
     tableConfig = pd.read_json('tableConfig.json', orient='records')
@@ -68,6 +64,8 @@ def logs():
 @login_required
 def dashboard():
     readTableConfig()
+    #creating required folders if not exists
+    fns.startUpCheck()
     fns.logging(
         "info",
         f"{current_user.username} accessed dashboard, on {fns.dateTime()[0]} at {fns.dateTime()[1]}"
@@ -170,7 +168,7 @@ def dbupload():
 
     #gather file name from the uploads folder
     fileData = []
-    for files in os.listdir("./data"):
+    for files in os.listdir(f"./{tableConfig.project_name[0]}"):
         fileData.append(files)
 
     #capturing the form data
@@ -188,23 +186,23 @@ def dbupload():
                 #2 = Replace data with existing survey ID
                 if uploadFile.endswith(".csv"):
                     #load the csv file into the staging table
-                    file = "./data/" + str(uploadFile)
+                    file = f"./{tableConfig.project_name[0]}/" + str(uploadFile)
                     fns.bulkUploadCSV(file,
                                       tableConfig.project_name_api_stg_data[0])
 
                 elif uploadFile.endswith(".json"):
                     #read the json file and convert it to a temp csv
-                    data = pd.read_json("./data/" + uploadFile)
-                    data = data.to_csv("./data/" + uploadFile + ".csv",
+                    data = pd.read_json(f"./{tableConfig.project_name[0]}/" + uploadFile)
+                    data = data.to_csv(f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv",
                                        index=False)
 
                     #load the csv file into the staging table
-                    file = "./data/" + uploadFile + ".csv"
+                    file = f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv"
                     fns.bulkUploadCSV(file,
                                       tableConfig.project_name_api_stg_data[0])
 
                     #remove temp csv file
-                    os.remove("./data/" + uploadFile + ".csv")
+                    os.remove(f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv")
 
                 fns.logging(
                     "info",
@@ -223,23 +221,23 @@ def dbupload():
 
                 if uploadFile.endswith(".csv"):
                     #load the csv file into the staging table
-                    file = "./data/" + str(uploadFile)
+                    file = f"./{tableConfig.project_name[0]}/" + str(uploadFile)
                     fns.bulkUploadCSV(file,
                                       tableConfig.project_name_api_stg_data[0])
 
                 elif uploadFile.endswith(".json"):
                     #read the json file and convert it to a temp csv
-                    data = pd.read_json("./data/" + uploadFile)
-                    data = data.to_csv("./data/" + uploadFile + ".csv",
+                    data = pd.read_json(f"./{tableConfig.project_name[0]}/" + uploadFile)
+                    data = data.to_csv(f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv",
                                        index=False)
 
                     #load the csv file into the staging table
-                    file = "./data/" + uploadFile + ".csv"
+                    file = f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv"
                     fns.bulkUploadCSV(file,
                                       tableConfig.project_name_api_stg_data[0])
 
                     #remove temp csv file
-                    os.remove("./data/" + uploadFile + ".csv")
+                    os.remove(f"./{tableConfig.project_name[0]}/" + uploadFile + ".csv")
 
                 fns.logging(
                     "info",
@@ -266,10 +264,10 @@ def dbupload():
 def dataDirectory():
     #gather file name from the download folder
     fileData = []
-    for files in os.listdir("./data"):
+    for files in os.listdir(f"./{tableConfig.project_name[0]}"):
         fileName, fileType = os.path.splitext(files)
-        fileDate = time.ctime(os.path.getctime("./data/" + files))
-        fileSize = size(os.path.getsize("./data/" + files))
+        fileDate = time.ctime(os.path.getctime(f"./{tableConfig.project_name[0]}/" + files))
+        fileSize = size(os.path.getsize(f"./{tableConfig.project_name[0]}/" + files))
         fileData.append([fileName, fileType, fileDate, fileSize])
 
     return render_template("data-directory.html",
@@ -282,14 +280,14 @@ def dataDirectory():
 @login_required
 def download(filename):
     fns.logging("info", f"{current_user.username} has downloaded {filename}")
-    return send_from_directory("./data", filename)
+    return send_from_directory(f"./{tableConfig.project_name[0]}", filename)
 
 
 #deleting file
 @main.route('/delete/<filename>', methods=['GET', 'POST'])
 @login_required
 def delete(filename):
-    os.remove("./data/" + filename)
+    os.remove(f"./{tableConfig.project_name[0]}/" + filename)
     fns.logging("critical", f"{current_user.username} has deleted {filename}")
     return redirect(url_for('main.dataDirectory'))
 
@@ -356,7 +354,7 @@ def masterData():
                                uploadTable=uploadTable)
 
 
-transactionFileList = ["2_2022-04-05_2022-04-05.csv"] * 5
+transactionFileList = []
 transactionSessionLogs = []
 
 
@@ -368,10 +366,12 @@ def transactionData():
             try:
                 fileName = request.form['fileName']
                 query = f"select * from vestergaard_data_insert('{fileName}');"
+                print(query)
                 cursor.execute(query)
+                conn.commit()
                 status = cursor.fetchone()
                 print("Query status: ", status[0])
-                transactionFileList.remove(fileName)
+                # transactionFileList.remove(fileName)
                 date, time = fns.dateTime()
                 logs = [status[0], fileName, date, time]
                 fns.transactionLogs(logs)
@@ -380,7 +380,7 @@ def transactionData():
                 fns.logging(
                     "info",
                     f"{current_user.username} has transacted data {fileName}")
-                transData = pd.read_csv("./data/" + fileName, low_memory=False)
+                transData = pd.read_csv(f"./{tableConfig.project_name[0]}/" + fileName, low_memory=False)
                 transDataHeaders = transData.columns.values.tolist()
                 transDataBody = transData[:5].values.tolist()
                 print(transDataHeaders)
@@ -417,7 +417,7 @@ def transactionData():
 @main.route('/save-data', methods=['GET', 'POST'])
 def saveData():
     uploadCSVfile = request.files['uploadCSVfile']
-    uploadCSVfile.save("./data/" + uploadCSVfile.filename)
+    uploadCSVfile.save(f"./{tableConfig.project_name[0]}/" + uploadCSVfile.filename)
     # print(CSVfile.filename)
     fns.logging(
         "info",

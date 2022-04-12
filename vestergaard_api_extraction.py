@@ -10,6 +10,8 @@ import json
 import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
+
+tableConfig = pd.read_json('tableConfig.json', orient='records')
 ########################################## connection strings #################################################################
 
 def connection():
@@ -54,7 +56,7 @@ def extraction(url, startDate, endDate, fileType, surveyNumber, dataSource):
     df_final['datasource'] = dataSource
     df_final['filename'] = fileName
     if fileType == "CSV":
-        df_final.to_csv(fr".\data\{fileName}.csv",  index=False, sep=',')
+        df_final.to_csv(fr".\{tableConfig.project_name[0]}\{fileName}.csv",  index=False, sep=',')
     elif fileType == "JSON":
-        df_final.to_json(fr".\data\{fileName}.json",  orient='records')
+        df_final.to_json(fr".\{tableConfig.project_name[0]}\{fileName}.json",  orient='records')
 ####################### load the dataframe to table stg_vestergaard_api_data ############################################
